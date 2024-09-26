@@ -1,0 +1,1 @@
+Readme file for holberton school interview projects.
