@@ -1,33 +1,30 @@
 #!/usr/bin/python3
-'''
-    Calculates the perimeter of the lands represented by
-    1 considering length of a 1 cell is 1
-'''
+"""
+Module that provides the island_perimeter function.
+"""
 
 
 def island_perimeter(grid):
-    '''
-    Calculates the perimeter of the lands represented by
-    1 considering length of a 1 cell is 1
-    '''
-    total_perimeter = 0
-    number_of_rows = len(grid)
-    num_c = len(grid[0])
+    """Calculate the perimeter of an island represented in a grid.
 
-    # Loop through each cell in the grid
-    for row_index in range(number_of_rows):
-        for column_index in range(num_c):
-            # If the cell is land
-            if grid[row_index][column_index] == 1:
-                # Check all four possible neighbors: right, down, left, and up
-                for r_ofs, c_ofs in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-                    neighbor_row = row_index + r_ofs
-                    neighbor_c = column_index + c_ofs
+    Args:
+        grid (list of list of int): A grid where 0 represents water and 1
+            represents land.
 
-                    # Add to perimeter if out of bounds or neighbor is water
-                    if (neighbor_row < 0 or neighbor_row >= number_of_rows or
-                            neighbor_c < 0 or neighbor_c >= num_c or
-                            grid[neighbor_row][neighbor_c] == 0):
-                        total_perimeter += 1
+    Returns:
+        int: The perimeter of the island.
+    """
+    perimeter = 0
+    m = len(grid)
+    n = len(grid[0])
 
-    return total_perimeter
+    for i in range(m):
+        for j in range(n):
+            if grid[i][j] == 1:
+                for dx, dy in [(0, 1), (1, 0), (-1, 0), (0, -1)]:
+                    new_i, new_j = i + dx, j + dy
+                    if (new_i >= m or new_j >= n or new_i < 0 or new_j < 0 or
+                            grid[new_i][new_j] == 0):
+                        perimeter += 1
+
+    return perimeter
