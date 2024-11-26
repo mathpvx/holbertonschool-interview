@@ -1,11 +1,11 @@
 #!/usr/bin/python3
-'''
-Calculates the perimeter of the lands represented by
-1 considering length of a 1 cell is 1
-'''
 
-# function calculates the perimeter of the island
+
 def island_perimeter(grid):
+    '''
+    Calculates the perimeter of the lands represented by
+    1 considering length of a 1 cell is 1
+    '''
     total_perimeter = 0
     number_of_rows = len(grid)
     num_c = len(grid[0])
