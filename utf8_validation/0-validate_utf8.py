@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+"""
+Validation of UTF8 encoding
+"""
+
 
 def validUTF8(data):
     """
