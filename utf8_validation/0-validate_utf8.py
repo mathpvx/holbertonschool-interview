@@ -1,10 +1,12 @@
+#!/usr/bin/python3
+
 def validUTF8(data):
     """
     Determine if a given data set represents a valid UTF-8 encoding.
-    
+
     Args:
         data (list): A list of integers where each integer represents a byte.
-    
+
     Returns:
         bool: True if data is a valid UTF-8 encoding, otherwise False.
     """
@@ -15,7 +17,8 @@ def validUTF8(data):
         byte = byte & 0xFF
 
         if num_bytes == 0:
-            # Check the first byte to determine the number of bytes in the character
+            # Check the first byte to determine the
+            # number of bytes in the character
             if (byte >> 7) == 0:  # 1-byte character (0xxxxxxx)
                 continue
             elif (byte >> 5) == 0b110:  # 2-byte character (110xxxxx)
