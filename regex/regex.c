@@ -9,25 +9,27 @@
  */
 int regex_match(const char *str, const char *pattern)
 {
-    if (!pattern || !str)
-        return (0);
+	int first_match;
 
-    /* If pattern is empty, return true only if str is also empty */
-    if (*pattern == '\0')
-        return (*str == '\0');
+	if (!pattern || !str)
+		return (0);
 
-    /* Check if current character matches */
-    int first_match = (*str && (*str == *pattern || *pattern == '.'));
+	/* If pattern is empty, return true only if str is also empty */
+	if (*pattern == '\0')
+		return (*str == '\0');
 
-    /* Handle * operator */
-    if (*(pattern + 1) == '*')
-    {
-        return (
-            regex_match(str, pattern + 2) || /* Skip 'x*' in pattern */
-            (first_match && regex_match(str + 1, pattern)) /* Use * to consume one char */
-        );
-    }
+	/* Check if current character matches */
+	first_match = (*str && (*str == *pattern || *pattern == '.'));
 
-    /* No star, just move forward if match */
-    return (first_match && regex_match(str + 1, pattern + 1));
+	/* Handle * operator */
+	if (*(pattern + 1) == '*')
+	{
+		return (
+			regex_match(str, pattern + 2) ||
+			(first_match && regex_match(str + 1, pattern))
+		);
+	}
+
+	/* No star, just move forward if match */
+	return (first_match && regex_match(str + 1, pattern + 1));
 }
