@@ -10,6 +10,7 @@ The player unable to make a move loses the round.
 The player who wins the most rounds overall is the winner.
 """
 
+
 def isWinner(x, nums):
     """
     Determine the overall winner of the Prime Game.
