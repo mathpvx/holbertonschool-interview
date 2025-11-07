@@ -2,13 +2,13 @@
 #include "menger.h"
 
 /**
- * is_filled - decide if a cell (x,y) is part of the sponge (filled) or a hole
+ * is_filled - tell if a cell is filled or empty
  * @x: column index
  * @y: row index
  *
- * Return: 1 if filled (‘#’), 0 if hole (‘ ’)
+ * Return: 1 if filled, 0 if empty
  *
- * A cell is a hole if at any scale its base-3 digits have (1,1) simultaneously.
+ * A cell is empty if, at any scale, both base-3 digits are 1.
  */
 static int is_filled(int x, int y)
 {
@@ -23,25 +23,25 @@ static int is_filled(int x, int y)
 }
 
 /**
- * pow3 - compute 3^n using integers
+ * pow3 - compute 3 to the power n
  * @n: exponent (>= 0)
  *
  * Return: 3^n
  */
 static int pow3(int n)
 {
-	int i, r = 1;
+	int r = 1;
 
-	for (i = 0; i < n; i++)
+	while (n-- > 0)
 		r *= 3;
 	return (r);
 }
 
 /**
- * menger - draw a 2D Menger sponge of a given level
- * @level: level of the sponge (>= 0). If < 0, do nothing.
+ * menger - draw a 2D Menger sponge
+ * @level: level of the sponge
  *
- * Description: prints to stdout using ‘#’ for filled cells and ‘ ’ for holes.
+ * If level < 0, do nothing.
  */
 void menger(int level)
 {
