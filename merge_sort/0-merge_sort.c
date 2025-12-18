@@ -2,36 +2,39 @@
 #include <stdlib.h>
 #include "sort.h"
 
-static void merge_sort_recursive(int *array, int *buffer,
-	size_t left, size_t right);
-static void merge(int *array, int *buffer,
-	size_t left, size_t mid, size_t right);
+static void merge_sort_rec(int *array, int *buff, size_t left, size_t right);
+static void merge_parts(int *array, int *buff, size_t left,
+		size_t mid, size_t right);
 
 /**
- * merge_sort - Sorts an array of integers using Merge Sort
- * @array: Array to sort
- * @size: Size of the array
+ * merge_sort - Sort an array of integers in ascending order using Merge Sort
+ * @array: Pointer to the array
+ * @size: Number of elements in the array
  */
 void merge_sort(int *array, size_t size)
 {
-	int *buffer;
+	int *buff;
 
-	if (!array || size < 2)
+	if (array == NULL || size < 2)
 		return;
 
-	buffer = malloc(sizeof(int) * size);
-	if (!buffer)
+	buff = malloc(sizeof(int) * size);
+	if (buff == NULL)
 		return;
 
-	merge_sort_recursive(array, buffer, 0, size);
-	free(buffer);
+	merge_sort_rec(array, buff, 0, size);
+
+	free(buff);
 }
 
 /**
- * merge_sort_recursive - Recursively divides and sorts the array
+ * merge_sort_rec - Recursively split, sort, and merge subarrays
+ * @array: Pointer to the array
+ * @buff: Buffer used for merging
+ * @left: Left index (inclusive)
+ * @right: Right index (exclusive)
  */
-static void merge_sort_recursive(int *array, int *buffer,
-	size_t left, size_t right)
+static void merge_sort_rec(int *array, int *buff, size_t left, size_t right)
 {
 	size_t mid;
 
@@ -40,16 +43,21 @@ static void merge_sort_recursive(int *array, int *buffer,
 
 	mid = left + (right - left) / 2;
 
-	merge_sort_recursive(array, buffer, left, mid);
-	merge_sort_recursive(array, buffer, mid, right);
-	merge(array, buffer, left, mid, right);
+	merge_sort_rec(array, buff, left, mid);
+	merge_sort_rec(array, buff, mid, right);
+	merge_parts(array, buff, left, mid, right);
 }
 
 /**
- * merge - Merges two sorted subarrays
+ * merge_parts - Merge two sorted halves of an array
+ * @array: Pointer to the array
+ * @buff: Buffer used for merging
+ * @left: Left index (inclusive)
+ * @mid: Middle index (start of right half)
+ * @right: Right index (exclusive)
  */
-static void merge(int *array, int *buffer,
-	size_t left, size_t mid, size_t right)
+static void merge_parts(int *array, int *buff, size_t left,
+		size_t mid, size_t right)
 {
 	size_t i, j, k;
 
@@ -64,15 +72,21 @@ static void merge(int *array, int *buffer,
 	k = left;
 
 	while (i < mid && j < right)
-		buffer[k++] = (array[i] <= array[j]) ? array[i++] : array[j++];
+	{
+		if (array[i] <= array[j])
+			buff[k++] = array[i++];
+		else
+			buff[k++] = array[j++];
+	}
 
 	while (i < mid)
-		buffer[k++] = array[i++];
+		buff[k++] = array[i++];
+
 	while (j < right)
-		buffer[k++] = array[j++];
+		buff[k++] = array[j++];
 
 	for (i = left; i < right; i++)
-		array[i] = buffer[i];
+		array[i] = buff[i];
 
 	printf("[Done]: ");
 	print_array(array + left, right - left);
