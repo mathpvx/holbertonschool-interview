@@ -5,13 +5,13 @@
 #include <string.h>
 
 /**
- * find_word_id - find the id of the word (length wlen) inside uniq[]
- * @p: pointer into s (not necessarily null-terminated)
+ * find_word_id - find the id of a word in the uniq list
+ * @p: pointer into s (word starts here)
  * @wlen: word length
  * @uniq: array of unique words
  * @uniq_n: number of unique words
  *
- * Return: id in [0..uniq_n-1] if found, otherwise -1
+ * Return: index in uniq if found, otherwise -1
  */
 static int find_word_id(char const *p, int wlen, char const **uniq, int uniq_n)
 {
@@ -26,20 +26,22 @@ static int find_word_id(char const *p, int wlen, char const **uniq, int uniq_n)
 }
 
 /**
- * build_unique - build arrays of unique words and required counts
+ * build_unique - build unique word list + required counts
  * @words: input words array
  * @nb_words: number of words
- * @uniq: output unique words array (allocated)
- * @req: output required counts (allocated)
+ * @uniq: output allocated array of unique words (pointers)
+ * @req: output allocated array of required counts per unique word
  *
  * Return: number of unique words, or -1 on failure
  */
-static int build_unique(char const **words, int nb_words, char const ***uniq, int **req)
+static int build_unique(char const **words, int nb_words,
+			char const ***uniq, int **req)
 {
 	char const **u;
 	int *r;
-	int i, j, ucnt = 0;
+	int i, j, ucnt;
 
+	ucnt = 0;
 	u = malloc(sizeof(*u) * (size_t)nb_words);
 	if (!u)
 		return (-1);
@@ -75,10 +77,10 @@ static int build_unique(char const **words, int nb_words, char const ***uniq, in
 }
 
 /**
- * push_index - append an index to a dynamic int array
- * @arr: pointer to array pointer
- * @len: pointer to current length
- * @cap: pointer to current capacity
+ * push_index - append an integer to a growing array
+ * @arr: address of array pointer
+ * @len: address of current length
+ * @cap: address of current capacity
  * @value: value to append
  *
  * Return: 1 on success, 0 on failure
@@ -103,21 +105,29 @@ static int push_index(int **arr, int *len, int *cap, int value)
 }
 
 /**
- * find_substring - find all starting indices of concatenations of all words
+ * find_substring - find all start indices of concatenations of all words
  * @s: string to scan
  * @words: array of words
  * @nb_words: number of words
- * @n: output count of indices
+ * @n: address where number of results is stored
  *
- * Return: allocated array of indices, or NULL if none / failure
+ * Return: allocated array of indices, or NULL if none (or on failure)
  */
 int *find_substring(char const *s, char const **words, int nb_words, int *n)
 {
 	int wlen, uniq_n, offset;
 	size_t slen;
-	char const **uniq = NULL;
-	int *req = NULL, *have = NULL;
-	int *res = NULL, res_len = 0, res_cap = 0;
+	char const **uniq;
+	int *req, *have;
+	int *res;
+	int res_len, res_cap;
+
+	uniq = NULL;
+	req = NULL;
+	have = NULL;
+	res = NULL;
+	res_len = 0;
+	res_cap = 0;
 
 	if (!n)
 		return (NULL);
@@ -148,15 +158,18 @@ int *find_substring(char const *s, char const **words, int nb_words, int *n)
 
 	for (offset = 0; offset < wlen; offset++)
 	{
-		size_t left = (size_t)offset, j;
-		int count = 0;
+		size_t left, j;
+		int count;
 
+		left = (size_t)offset;
+		count = 0;
 		memset(have, 0, sizeof(*have) * (size_t)uniq_n);
 
 		for (j = (size_t)offset; j + (size_t)wlen <= slen; j += (size_t)wlen)
 		{
-			int id = find_word_id(s + j, wlen, uniq, uniq_n);
+			int id;
 
+			id = find_word_id(s + j, wlen, uniq, uniq_n);
 			if (id < 0)
 			{
 				memset(have, 0, sizeof(*have) * (size_t)uniq_n);
@@ -170,8 +183,9 @@ int *find_substring(char const *s, char const **words, int nb_words, int *n)
 
 			while (have[id] > req[id])
 			{
-				int lid = find_word_id(s + left, wlen, uniq, uniq_n);
+				int lid;
 
+				lid = find_word_id(s + left, wlen, uniq, uniq_n);
 				if (lid >= 0)
 					have[lid]--;
 				left += (size_t)wlen;
@@ -180,6 +194,8 @@ int *find_substring(char const *s, char const **words, int nb_words, int *n)
 
 			if (count == nb_words)
 			{
+				int lid;
+
 				if (!push_index(&res, &res_len, &res_cap, (int)left))
 				{
 					free(have);
@@ -189,15 +205,11 @@ int *find_substring(char const *s, char const **words, int nb_words, int *n)
 					return (NULL);
 				}
 
-				/* slide by one word to keep searching */
-				{
-					int lid = find_word_id(s + left, wlen, uniq, uniq_n);
-
-					if (lid >= 0)
-						have[lid]--;
-					left += (size_t)wlen;
-					count--;
-				}
+				lid = find_word_id(s + left, wlen, uniq, uniq_n);
+				if (lid >= 0)
+					have[lid]--;
+				left += (size_t)wlen;
+				count--;
 			}
 		}
 	}
