@@ -87,8 +87,7 @@ static int build_unique(char const **words, int nb_words,
  */
 static int push_index(int **arr, int *len, int *cap, int value)
 {
-	int new_cap;
-	int *tmp;
+	int new_cap, *tmp;
 
 	if (*len >= *cap)
 	{
@@ -105,6 +104,78 @@ static int push_index(int **arr, int *len, int *cap, int value)
 }
 
 /**
+ * scan_offset - scan s using a fixed offset (0..wlen-1)
+ * @s: string to scan
+ * @slen: length of s
+ * @wlen: word length
+ * @nb_words: number of words total
+ * @uniq: unique words array
+ * @req: required counts per unique word
+ * @uniq_n: number of unique words
+ * @have: working counts array (size uniq_n)
+ * @res: results array pointer
+ * @res_len: results length
+ * @res_cap: results capacity
+ * @offset: current offset
+ *
+ * Return: 1 on success, 0 on allocation failure
+ */
+static int scan_offset(char const *s, size_t slen, int wlen, int nb_words,
+		       char const **uniq, int *req, int uniq_n, int *have,
+		       int **res, int *res_len, int *res_cap, int offset)
+{
+	size_t left, j;
+	int count;
+
+	left = (size_t)offset;
+	count = 0;
+	memset(have, 0, sizeof(*have) * (size_t)uniq_n);
+
+	for (j = (size_t)offset; j + (size_t)wlen <= slen; j += (size_t)wlen)
+	{
+		int id;
+
+		id = find_word_id(s + j, wlen, uniq, uniq_n);
+		if (id < 0)
+		{
+			memset(have, 0, sizeof(*have) * (size_t)uniq_n);
+			count = 0;
+			left = j + (size_t)wlen;
+			continue;
+		}
+
+		have[id]++;
+		count++;
+
+		while (have[id] > req[id])
+		{
+			int lid;
+
+			lid = find_word_id(s + left, wlen, uniq, uniq_n);
+			if (lid >= 0)
+				have[lid]--;
+			left += (size_t)wlen;
+			count--;
+		}
+
+		if (count == nb_words)
+		{
+			int lid;
+
+			if (!push_index(res, res_len, res_cap, (int)left))
+				return (0);
+
+			lid = find_word_id(s + left, wlen, uniq, uniq_n);
+			if (lid >= 0)
+				have[lid]--;
+			left += (size_t)wlen;
+			count--;
+		}
+	}
+	return (1);
+}
+
+/**
  * find_substring - find all start indices of concatenations of all words
  * @s: string to scan
  * @words: array of words
@@ -115,19 +186,9 @@ static int push_index(int **arr, int *len, int *cap, int value)
  */
 int *find_substring(char const *s, char const **words, int nb_words, int *n)
 {
-	int wlen, uniq_n, offset;
+	int wlen, uniq_n, offset, *req, *have, *res, res_len, res_cap;
 	size_t slen;
 	char const **uniq;
-	int *req, *have;
-	int *res;
-	int res_len, res_cap;
-
-	uniq = NULL;
-	req = NULL;
-	have = NULL;
-	res = NULL;
-	res_len = 0;
-	res_cap = 0;
 
 	if (!n)
 		return (NULL);
@@ -156,61 +217,20 @@ int *find_substring(char const *s, char const **words, int nb_words, int *n)
 		return (NULL);
 	}
 
+	res = NULL;
+	res_len = 0;
+	res_cap = 0;
+
 	for (offset = 0; offset < wlen; offset++)
 	{
-		size_t left, j;
-		int count;
-
-		left = (size_t)offset;
-		count = 0;
-		memset(have, 0, sizeof(*have) * (size_t)uniq_n);
-
-		for (j = (size_t)offset; j + (size_t)wlen <= slen; j += (size_t)wlen)
+		if (!scan_offset(s, slen, wlen, nb_words, uniq, req, uniq_n, have,
+				 &res, &res_len, &res_cap, offset))
 		{
-			int id;
-
-			id = find_word_id(s + j, wlen, uniq, uniq_n);
-			if (id < 0)
-			{
-				memset(have, 0, sizeof(*have) * (size_t)uniq_n);
-				count = 0;
-				left = j + (size_t)wlen;
-				continue;
-			}
-
-			have[id]++;
-			count++;
-
-			while (have[id] > req[id])
-			{
-				int lid;
-
-				lid = find_word_id(s + left, wlen, uniq, uniq_n);
-				if (lid >= 0)
-					have[lid]--;
-				left += (size_t)wlen;
-				count--;
-			}
-
-			if (count == nb_words)
-			{
-				int lid;
-
-				if (!push_index(&res, &res_len, &res_cap, (int)left))
-				{
-					free(have);
-					free((void *)uniq);
-					free(req);
-					free(res);
-					return (NULL);
-				}
-
-				lid = find_word_id(s + left, wlen, uniq, uniq_n);
-				if (lid >= 0)
-					have[lid]--;
-				left += (size_t)wlen;
-				count--;
-			}
+			free(have);
+			free((void *)uniq);
+			free(req);
+			free(res);
+			return (NULL);
 		}
 	}
 
