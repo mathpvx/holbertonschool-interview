@@ -1,4 +1,3 @@
-/* binary_trees.h */
 #ifndef BINARY_TREES_H
 #define BINARY_TREES_H
 
@@ -26,4 +25,3 @@ binary_tree_t *binary_tree_node(binary_tree_t *parent, int value);
 heap_t *heap_insert(heap_t **root, int value);
 
 #endif /* BINARY_TREES_H */
-

@@ -1,10 +1,9 @@
-/* 1-heap_insert.c */
 #include "binary_trees.h"
 
 #include <stdlib.h>
 
 /**
- * heap_size - count nodes in a heap
+ * heap_size - counts the number of nodes in a heap
  * @root: pointer to root
  *
  * Return: number of nodes
@@ -18,11 +17,11 @@ static size_t heap_size(const heap_t *root)
 }
 
 /**
- * node_at_index - get node at given 1-based index in level-order (like array heap)
+ * node_at_index - gets node at a given index (level-order)
  * @root: pointer to root
  * @idx: 1-based index
  *
- * Return: pointer to node, or NULL
+ * Return: pointer to node or NULL
  */
 static heap_t *node_at_index(heap_t *root, size_t idx)
 {
@@ -54,17 +53,18 @@ static heap_t *node_at_index(heap_t *root, size_t idx)
 }
 
 /**
- * heapify_up - restore max-heap property by swapping values upward
- * @node: node to heapify from
+ * heapify_up - restores max heap order
+ * @node: starting node
  *
- * Return: pointer to node after heapify (the inserted node position by value)
+ * Return: pointer to node where value ends up
  */
 static heap_t *heapify_up(heap_t *node)
 {
 	while (node && node->parent && node->n > node->parent->n)
 	{
-		int tmp = node->n;
+		int tmp;
 
+		tmp = node->n;
 		node->n = node->parent->n;
 		node->parent->n = tmp;
 		node = node->parent;
@@ -73,15 +73,15 @@ static heap_t *heapify_up(heap_t *node)
 }
 
 /**
- * heap_insert - insert a value into a Max Binary Heap
- * @root: double pointer to root node
+ * heap_insert - inserts a value into a Max Binary Heap
+ * @root: double pointer to root
  * @value: value to insert
  *
- * Return: pointer to the inserted node, or NULL on failure
+ * Return: pointer to inserted node, or NULL on failure
  */
 heap_t *heap_insert(heap_t **root, int value)
 {
-	size_t sz, idx;
+	size_t size, idx;
 	heap_t *parent, *newn;
 
 	if (!root)
@@ -93,8 +93,8 @@ heap_t *heap_insert(heap_t **root, int value)
 		return (*root);
 	}
 
-	sz = heap_size(*root);
-	idx = sz + 1;
+	size = heap_size(*root);
+	idx = size + 1;
 
 	parent = node_at_index(*root, idx / 2);
 	if (!parent)
@@ -109,6 +109,5 @@ heap_t *heap_insert(heap_t **root, int value)
 	else
 		parent->right = newn;
 
-	heapify_up(newn);
-	return (newn);
+	return (heapify_up(newn));
 }
